@@ -1,0 +1,45 @@
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  labels:
+    app: coreos-assembler
+  name: coreos-assembler-bc
+spec:
+  # kill the build after 3hrs
+  completionDeadlineSeconds: 13200
+  lookupPolicy:
+    local: true
+  output:
+    to:
+      kind: ImageStreamTag
+      name: coreos-assembler:buildconfig-master
+  postCommit: {}
+  runPolicy: Serial
+  source:
+    git:
+      ref: "master"
+      uri: "https://github.com/coreos/coreos-assembler"
+    type: Git
+  strategy:
+    dockerStrategy:
+      dockerfilePath: ocp/Dockerfile.buildconfig
+      env:
+          - name: GIT_URL
+            value: "https://github.com/coreos/coreos-assembler"
+          - name: GIT_REF
+            value: "master"
+          - name: OPENSHIFT_GIT_HACK
+            value: "TRUE"
+      from:
+        kind: ImageStreamTag
+        name: coreos-assembler:master
+    dockerfilePath: ocp/Dockerfile.buildconfig
+    type: Docker
+  triggers:
+    - type: ConfigChange
+    - type: "ImageChange"
+      imageChange:
+          from:
+            kind: "ImageStreamTag"
+            name: coreos-assembler:master
+

@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  # Replace this with e.g. $USER-cosa
+  name: mnguyen-cosa
+spec:
+  serviceAccountName: jenkins-kvm
+  containers:
+  - command: ["/bin/bash"]
+    image: docker-registry.default.svc:5000/rhcos-mnguyen/coreos-assembler:buildconfig-pr1862
+    name: cosa
+    resources:
+      requests:
+        memory: "3Gi"
+      limits:
+        memory: "3Gi"
+    volumeMounts:
+    - mountPath: /srv
+      name: workdir
+    # FIXME: switch this to the KVM request and drop privileged
+    # once PSI rebases on OpenShift 4.  See also
+    # https://github.com/coreos/fedora-coreos-pipeline/pull/157/commits/ab56ac13323d9b45455d1e4525a5f36d1a7511c8
+    securityContext:
+      privileged: true
+  volumes:
+  - name: workdir
+    emptyDir: {}
+  restartPolicy: Never
+

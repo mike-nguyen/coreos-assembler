@@ -108,7 +108,7 @@ objects:
         type: Git
       strategy:
         dockerStrategy:
-          dockerfilePath: ocp/Dockerfile.buildconfig
+          dockerfilePath: ocp/Dockerfile.dev
           env:
               - name: GIT_URL
                 value: "${REPO_URL}"

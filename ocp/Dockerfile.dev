@@ -4,6 +4,7 @@ WORKDIR /root/containerbuild
 USER root
 
 COPY ./ /root/containerbuild/
+RUN cat ocp/Dockerfile.dev
 RUN cd /root/containerbuild/gangplank && \
     make && \
     make install DESTDIR=/ && \
@@ -12,4 +13,4 @@ RUN cd /root/containerbuild/gangplank && \
 WORKDIR /srv/
 
 USER builder
-ENTRYPOINT ["/usr/bin/gangplank", "builder"]
+ENTRYPOINT ["/usr/bin/dumb-init"]
