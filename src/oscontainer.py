@@ -192,6 +192,10 @@ def oscontainer_build(containers_storage, tmpdir, src, ref, image_name_and_tag,
                 config += ['-l', f"com.coreos.coreos-assembler-commit={cosa_commit}"]
             config += ['-l', f"com.coreos.redhat-coreos-commit={rhcos_commit}"]
 
+        if 'koji' in meta:
+            build_id = meta['koji']['build_id']
+            config += ['-l', f"com.coreos.koji.build-id={build_id}"]
+
         if 'extensions' in meta:
             tarball = os.path.abspath(os.path.join(builddir, meta['extensions']['path']))
             dest_dir = os.path.join(mnt, 'extensions')

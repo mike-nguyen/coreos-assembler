@@ -833,6 +833,8 @@ Environment variables are supported:
             Reserve(args.profile).reserve_id(build)
         if args.reserve_id_state_file:
             upload._reserve_id_file = args.reserve_id_state_file
+        if args.tag:
+            os.environ["KOJI_TAG"] = args.tag
         build.build_artifacts()
         upload.upload()
     elif args._command == 'reserve-id':
