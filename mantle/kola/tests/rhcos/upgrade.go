@@ -25,6 +25,7 @@ import (
 	"time"
 
 	"github.com/coreos/coreos-assembler-schema/cosa"
+	"github.com/coreos/go-semver/semver"
 	"github.com/coreos/mantle/kola"
 	"github.com/coreos/mantle/kola/cluster"
 	"github.com/coreos/mantle/kola/register"
@@ -220,7 +221,6 @@ func rhcosUpgradeFromOcpRhcos(c cluster.TestCluster) {
 			c.SkipNow()
 		}
 		defer os.Remove(rhcosQcow2)
-
 		options.OverrideBackingFile = rhcosQcow2
 		m, err = pc.NewMachineWithQemuOptions(ignition, options)
 		if err != nil {
@@ -261,7 +261,6 @@ func rhcosUpgradeFromOcpRhcos(c cluster.TestCluster) {
 
 // getJSON retrieves a JSON URL and unmarshals it into an interface
 func getJson(url string, target interface{}) error {
-
 	myClient := &http.Client{Timeout: 10 * time.Second}
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -355,8 +354,22 @@ func downloadLatestReleasedRHCOS(target string) (string, error) {
 		return
 	}(releaseIndex, unique)
 
+	// In cases where there is a blocked upgrade to a new Y-stream there can be
+	// two nodes that don't have an edge to upgrade to. This is generally the
+	// latest 4.Y-1.Z and the latest 4.Y.Z. Choose the latest 4.Y.Z
+	latest := difference[0]
+	if len(difference) == 2 {
+		vA := semver.New(graph.Nodes[difference[0]].Version)
+		vB := semver.New(graph.Nodes[difference[1]].Version)
+
+		if vA.LessThan(*vB) {
+			latest = difference[1]
+		} else {
+			latest = difference[0]
+		}
+	}
 	var ocpRelease *OcpRelease
-	latestOcpPayload := graph.Nodes[difference[0]].Payload
+	latestOcpPayload := graph.Nodes[latest].Payload
 	// oc should be included in cosa since https://github.com/coreos/coreos-assembler/pull/2777
 	cmd := exec.Command("/usr/bin/oc", "adm", "release", "info", latestOcpPayload, "-o", "json")
 	output, err := cmd.Output()
